@@ -6,20 +6,21 @@
 */
 
 #include <Arduino.h>
+#include "Sensors/Ultrasonic_Sensor/UltrasonicSensor.h"
 
-// put function declarations here:
-int myFunction(int, int);
+// Pins
+const int TRIGGER_PIN = 2;
+const int ECHO_PIN = 3;
+const int MAX_DISTANCE = 200;
+UltrasonicSensor base_distance_sensor(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  
+
 }
+
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }

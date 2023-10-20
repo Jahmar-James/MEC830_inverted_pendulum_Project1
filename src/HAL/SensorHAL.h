@@ -3,7 +3,6 @@
 
 class SensorHAL {
 public:
-  virtual void initialize() = 0;  // Initialization
   virtual float read() = 0;      // High level Read the sensor
   virtual void calibrate() = 0; // Calibration routine
   virtual float filter() = 0;   // Software Signal conditioning 

@@ -1,3 +1,10 @@
+/*
+   Inverted Pendulum on a Cart
+   Author: Jahmar James
+   Date: 10th October 2023
+   Description: Controls a cart to balance an inverted pendulum
+*/
+
 #include <Arduino.h>
 
 // put function declarations here:

@@ -25,7 +25,7 @@ private:
   float calibrate_distance_for_temperature(float raw_distance, float temperature);
   void _calibrate( const float known_distance, const int calibration_readings = 10);
   float calibration_offset = 0.0;
-  bool calibrated = false; // TODO: Force calibration before reading is distance is known
+  bool calibrated = false; // TODO: Force calibration before reading if distance is known
 };
 
 #endif // ULTRASONIC_SENSOR_H

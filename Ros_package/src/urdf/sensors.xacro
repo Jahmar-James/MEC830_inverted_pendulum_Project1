@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="ultrasonic_width" value="0.02" /> <!-- Width of ultrasonic sensor box -->
+    <xacro:property name="ultrasonic_height" value="0.02" /> <!-- Height of ultrasonic sensor box -->
+    <xacro:property name="ultrasonic_depth" value="0.02" /> <!-- Depth of ultrasonic sensor box -->
+    <xacro:property name="ultrasonic_mass" value="0.01" /> <!-- Mass of ultrasonic sensor -->
+
+    <xacro:property name="imu_width" value="0.05" /> <!-- Width of IMU box -->
+    <xacro:property name="imu_height" value="0.02" /> <!-- Height of IMU box -->
+    <xacro:property name="imu_depth" value="0.05" /> <!-- Depth of IMU box -->
+    <xacro:property name="imu_mass" value="0.01" /> <!-- Mass of IMU -->
+    <xacro:property name="imu_inertia_xx" value="1e-6" /> <!-- Inertia about x-axis -->
+    <xacro:property name="imu_inertia_yy" value="1e-6" /> <!-- Inertia about y-axis -->
+    <xacro:property name="imu_inertia_zz" value="1e-6" /> <!-- Inertia about z-axis -->
+
+  <!-- Sensors -->
+<!-- Base define - later add noise, bias -->
+
+<!-- Ultrasonic Sensor Link -->
+<link name="ultrasonic_sensor_link">
+  <inertial>
+    <mass value="${ultrasonic_mass}"/> 
+    <inertia 
+        ixx="1e-6" ixy="0.0" ixz="0.0"
+        iyy="1e-6" iyz="0.0"
+        izz="1e-6"/> <!-- Small inertia values for the sensor -->
+  </inertial>
+  <visual>
+    <geometry>
+      <box size="${ultrasonic_width} ${ultrasonic_depth} ${ultrasonic_height}" /> <!-- Sensor modeled as a box -->
+    </geometry>
+    <material name="blue"/> 
+  </visual>
+  <collision>
+    <geometry>
+      <box size="${ultrasonic_width} ${ultrasonic_depth} ${ultrasonic_height}" /> <!-- Same geometry for collision -->
+    </geometry>
+  </collision>
+</link>
+
+<!-- Fixed Joint connecting Ultrasonic Sensor to Rail -->
+<joint name="ultrasonic_sensor_joint" type="fixed">
+  <parent link="rail"/>
+  <child link="ultrasonic_sensor_link"/>
+  <origin xyz="0.25 0 0.02" rpy="0 0 ${pi}"/> <!-- Positioned at the end of the rail, adjust xyz values as needed -->
+</joint>
+
+
+<gazebo reference="ultrasonic_sensor_link">
+  <material>Gazebo/Blue</material>
+
+  <sensor type="ray" name="ultrasonic_sensor">
+    <always_on>true</always_on>
+    <pose>0 0 0 0 0 0</pose> <!-- Sensor's position w.r.t its parent link -->
+    <visualize>true</visualize> <!-- If you want to visualize the sensor's rays in Gazebo, set to true -->
+    <update_rate>5.0</update_rate> <!-- The rate at which Gazebo updates the sensor's internal readings -->
+    <ray>
+      <scan>
+        <horizontal> <!-- Horizontal scan parameters -->
+          <samples>1</samples> <!-- Number of samples per scan -->
+          <resolution>1</resolution> <!-- Angular resolution in degrees -->
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.025</min> <!-- Minimum sensing distance -->
+        <max>5.0</max> <!-- Maximum sensing distance -->
+        <resolution>0.01</resolution> <!-- Distance resolution -->
+      </range>
+    </ray>
+    <!-- The plugin to handle the connection between Gazebo and ROS -->
+    <plugin filename="libgazebo_ros_ray_sensor.so" name="gazebo_ros_ultrasonic_sensor">
+        <ros>
+          <namespace>/Ultrasonic</namespace>
+          <remapping>~/out:=/ultrasonic_distance</remapping>
+        </ros> 
+      <frame_name>ultrasonic_sensor_link</frame_name> <!-- The TF frame for the ultrasonic data -->
+      <update_rate>5</update_rate> <!-- Update rate for publishing to the ROS topic --> 
+      <radiation_type>ultrasound</radiation_type> 
+      <output_type>sensor_msgs/Range </output_type> <!-- The ROS message type for the ultrasonic data -->
+      <gaussian_noise>0.01</gaussian_noise> <!-- Gaussian noise added to the sensor data assume mean is 0 only specifcy the std -->  
+  
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+    </plugin>
+  </sensor>
+</gazebo>
+
+
+<!-- IMU Link -->
+<link name="imu_link">
+  <inertial>
+    <mass value="${imu_mass}"/> 
+    <inertia 
+        ixx="${imu_inertia_xx}" ixy="0.0" ixz="0.0"
+        iyy="${imu_inertia_yy}" iyz="0.0"
+        izz="${imu_inertia_zz}"/> 
+  </inertial>
+  <visual>
+    <geometry>
+      <box size="${imu_width} ${imu_depth} ${imu_height}"/> 
+    </geometry>
+    <material name="white"/>
+  </visual>
+  <collision>
+    <geometry>
+      <box size="${imu_width} ${imu_depth} ${imu_height}"/> 
+    </geometry>
+  </collision>
+</link>
+
+<!-- Fixed Joint connecting IMU to Cart -->
+<joint name="imu_joint" type="fixed">
+  <parent link="cart"/>
+  <child link="imu_link"/>
+  <origin xyz="0 0 ${cart_height/2}" rpy="0 0 0"/> <!-- Positioned at the center-top of the cart. Adjust xyz values if IMU placement differs -->
+</joint>
+
+<gazebo reference="imu_link" >
+  <gravity>true</gravity> <!-- Include if you need to simulate gravity's effect -->
+  <sensor type="imu" name="imu_sensor">
+    <always_on>true</always_on> <!-- Ensure the sensor is always on -->
+    <update_rate>50.0</update_rate> <!-- Update rate for Gazebo's internal sensor -->
+    <visualize>false</visualize> <!-- If you want to visualize the sensor in Gazebo, set to true -->
+    <!-- <topic>__default_topic__</topic> -->
+    <pose>0 0 ${cart_height/2} 0 0 0</pose> <!-- Sensor's position w.r.t its parent link -->
+    
+    <!-- The plugin parameters -->
+    <plugin filename="libgazebo_ros_imu_sensor.so" name="gazebo_ros_imu_sensor_plugin">
+      <ros>
+      <!-- publish to /imu/data -->
+      <namespace>/imu</namespace>
+      <remapping>~/out:=data</remapping>
+      </ros>
+      <frameName>imu_link</frameName> <!-- The TF frame for the IMU data -->
+      <updateRateHZ>50.0</updateRateHZ> <!-- Update rate for publishing to ROS -->
+      <gaussianNoise>0.0</gaussianNoise> <!-- Gaussian noise added to the sensor data -->
+      <xyzOffset>0 0 0</xyzOffset> <!-- Offset of the sensor if necessary -->
+      <rpyOffset>0 0 0</rpyOffset> <!-- Orientation offset of the sensor if necessary -->
+      <initial_orientation_as_reference>false</initial_orientation_as_reference> <!-- Use the initial orientation as reference -->
+    </plugin>
+  </sensor>
+  <material>Gazebo/Green</material>
+</gazebo>
+
+
+<!-- Rotary Encoder Link (Virtual Link) -->
+<link name="rotary_encoder_link"/>
+
+  <gazebo reference="rotary_encoder_link">
+    <material>Gazebo/BlueTransparent</material>
+  </gazebo>
+
+<!-- Joint connecting rotary encoder to the cart_pendulum_rod_joint -->
+<joint name="rotary_encoder_joint" type="revolute">
+  <parent link="cart"/>
+  <child link="rotary_encoder_link"/>
+  <origin xyz="0 ${-cart_depth/2-radius_rod/2} 0" rpy="0 0 0"/>
+  <axis xyz="0 1 0" />
+  <dynamics damping="${friction_rod}" />  <!-- Estimated damping coefficient -->
+  <limit effort="1000.0" lower="${PI/2}" upper = "${PI +(PI/2)}" velocity="1000.0"/>
+</joint>
+
+<gazebo>
+  <plugin filename="libgazebo_ros_joint_state_publisher.so" name="gazebo_ros_joint_state_publisher">
+    <joint_name>cart_pendulum_rod_joint</joint_name>
+    <!-- Other settings if required -->
+  </plugin>
+</gazebo>
+
+</robot>

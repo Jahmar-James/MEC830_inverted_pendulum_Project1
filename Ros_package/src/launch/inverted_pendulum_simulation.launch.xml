@@ -1,0 +1,21 @@
+<launch>
+    <!-- Robot state publisher -->
+    <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher">
+        <param name="robot_description_file" value="src/inverted_pendulum_simulation/urdf/inverted_pendulum.urdf" />
+    </node>
+
+    <!-- Joint state publisher -->
+    <node pkg="joint_state_publisher" exec="joint_state_publisher" name="joint_state_publisher">
+        <param name="robot_description_file" value="src/inverted_pendulum_simulation/urdf/inverted_pendulum.urdf" />
+    </node>
+
+    <!-- Rotary encoder node -->
+    <node pkg="inverted_pendulum_simulation" exec="rotary_encoder_node" name="rotary_encoder_node" output="screen" />
+
+    <!-- Entity spawn command -->
+    <node pkg="gazebo_ros" exec="spawn_entity.py" name="spawn_entity">
+        <param name="topic" value="/robot_description" />
+        <param name="entity" value="my_robot" />
+    </node>
+
+</launch>

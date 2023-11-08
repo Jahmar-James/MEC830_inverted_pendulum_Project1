@@ -1,0 +1,2 @@
+sim_time, /gazebo/default/user_cmd?p=/wrench/force/x_1
+1.153, 0

@@ -54,7 +54,8 @@ UltrasonicSensor::UltrasonicSensor(int triggerPin, int echoPin, int maxDistance)
 }
 
 float UltrasonicSensor::read() {
-  return filter() + calibration_offset;
+  return sonar.ping_cm();
+  // return filter() + calibration_offset;
 }
 
 float UltrasonicSensor::read_with_temperature_adjustment(float temperature) {

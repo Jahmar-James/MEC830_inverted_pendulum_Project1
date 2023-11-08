@@ -29,8 +29,9 @@ public:
   static constexpr float UPPER_BOUND_ADDRESS = LOWER_BOUND_ADDRESS + sizeof(float);
   static constexpr float CALIBRATION_OFFSET_ADDRESS = UPPER_BOUND_ADDRESS + sizeof(float);
 
-private:
   NewPing sonar;
+
+private:
   int triggerPin;
   int echoPin;
   int maxDistance;
